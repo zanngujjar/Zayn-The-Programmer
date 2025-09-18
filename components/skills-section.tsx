@@ -57,7 +57,8 @@ const skills = [
 ]
 
 export function SkillsSection() {
-  const { ref, isVisible } = useScrollAnimation()
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const { ref, isVisible } = useScrollAnimation(isMobile ? 0.3 : 0.1)
 
   return (
     <section id="skills" className="py-20 px-4 sm:px-6 lg:px-8">
@@ -81,14 +82,14 @@ export function SkillsSection() {
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
-                  <CardContent className="p-6 text-center">
-                    <div className="mb-4">
+                  <CardContent className="p-4 sm:p-6 text-center">
+                    <div className="mb-3 sm:mb-4">
                       <skill.icon
-                        className={`h-12 w-12 mx-auto ${skill.color} group-hover:scale-110 transition-transform duration-300`}
+                        className={`h-8 w-8 sm:h-12 sm:w-12 mx-auto ${skill.color} group-hover:scale-110 transition-transform duration-300`}
                       />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2 text-foreground">{skill.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{skill.description}</p>
+                    <h3 className="text-base sm:text-lg font-semibold mb-2 text-foreground">{skill.title}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{skill.description}</p>
                   </CardContent>
                 </Card>
               </div>
