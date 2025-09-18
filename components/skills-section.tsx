@@ -1,9 +1,9 @@
 "use client"
 
-
 import { Card, CardContent } from "@/components/ui/card"
 import { Code2, Database, Globe, Smartphone, Server, Palette, GitBranch, Shield } from "lucide-react"
 import { useScrollAnimation } from "@/hooks/use-scroll-animation"
+import { useEffect, useState } from "react"
 
 const skills = [
   {
@@ -57,11 +57,33 @@ const skills = [
 ]
 
 export function SkillsSection() {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-  const { ref, isVisible } = useScrollAnimation(
-    0.1,
-    isMobile ? "0px 0px 200px 0px" : "0px 0px -50px 0px"
-  )
+  const [rootMargin, setRootMargin] = useState("0px 0px -50px 0px")
+
+  useEffect(() => {
+    const updateRootMargin = () => {
+      const width = window.innerWidth
+      
+      // More aggressive triggers for mobile/tablet
+      if (width < 640) {
+        setRootMargin("0px 0px 900px 0px")      // Mobile: trigger much earlier
+      } else if (width < 768) {
+        setRootMargin("0px 0px 400px 0px")      // Small tablet: trigger earlier
+      } else if (width < 1024) {
+        setRootMargin("0px 0px 350px 0px")      // Tablet: trigger earlier
+      } else {
+        setRootMargin("0px 0px -50px 0px")      // Desktop: trigger before viewport
+      }
+    }
+
+    // Set initial value
+    updateRootMargin()
+
+    // Update on resize
+    window.addEventListener('resize', updateRootMargin)
+    return () => window.removeEventListener('resize', updateRootMargin)
+  }, [])
+
+  const { ref, isVisible } = useScrollAnimation(0.1, rootMargin)
 
   return (
     <section id="skills" className="py-20 px-4 sm:px-6 lg:px-8">

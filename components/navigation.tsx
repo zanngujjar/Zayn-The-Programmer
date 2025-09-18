@@ -11,15 +11,6 @@ import { ThemeToggle } from "@/components/theme-toggle"
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  const scrollToContact = (e: React.MouseEvent) => {
-    e.preventDefault()
-    const contactSection = document.getElementById("contact")
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth" })
-    }
-    setIsMenuOpen(false)
-  }
-
   return (
     <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -36,7 +27,7 @@ export function Navigation() {
             <Link href="/services" className="text-foreground hover:text-primary transition-colors">
               Services
             </Link>
-            <Link href="/#contact" className="text-foreground hover:text-primary transition-colors">              
+            <Link href="/contact" className="text-foreground hover:text-primary transition-colors">              
               Contact
             </Link>
             <ThemeToggle />
@@ -69,12 +60,13 @@ export function Navigation() {
               >
                 Services
               </Link>
-              <button
-                onClick={scrollToContact}
-                className="text-foreground hover:text-primary transition-colors text-left"
+              <Link
+                href="/contact"
+                className="text-foreground hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Contact
-              </button>
+              </Link>
             </div>
           </div>
         )}
