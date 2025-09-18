@@ -58,7 +58,10 @@ const skills = [
 
 export function SkillsSection() {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-  const { ref, isVisible } = useScrollAnimation(isMobile ? 0.3 : 0.1)
+  const { ref, isVisible } = useScrollAnimation(
+    0.1,
+    isMobile ? "0px 0px 200px 0px" : "0px 0px -50px 0px"
+  )
 
   return (
     <section id="skills" className="py-20 px-4 sm:px-6 lg:px-8">
