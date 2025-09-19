@@ -190,23 +190,3 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Temporary files
-*.tmp
-*.temp
-*.swp
-*.swo
-.tmp/
-temp/
-
-
-# But keep important public assets
-!public/*.png
-!public/*.jpg
-!public/*.svg
-!public/*.ico
-!public/*.webp
-
-# Lock files (optional - uncomment if you want to ignore them)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
