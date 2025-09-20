@@ -27,7 +27,10 @@ export function Navigation() {
             <Link href="/services" className="text-foreground hover:text-primary transition-colors">
               Services
             </Link>
-            <Link href="/contact" className="text-foreground hover:text-primary transition-colors">              
+            <Link href="/how-to" className="text-foreground hover:text-primary transition-colors">
+              How To
+            </Link>
+            <Link href="/contact" className="text-foreground hover:text-primary transition-colors">
               Contact
             </Link>
             <ThemeToggle />
@@ -59,6 +62,13 @@ export function Navigation() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Services
+              </Link>
+              <Link
+                href="/how-to"
+                className="text-foreground hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                How To
               </Link>
               <Link
                 href="/contact"
