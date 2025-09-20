@@ -1,0 +1,81 @@
+{
+  "posts": [
+    {
+      "id": "react-hooks-guide",
+      "slug": "react-hooks-guide",
+      "title": "Complete Guide to React Hooks",
+      "excerpt": "Master React Hooks with this comprehensive guide covering useState, useEffect, and custom hooks with practical examples.",
+      "thumbnail": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop",
+      "author": "ZaynTheProgrammer",
+      "publishDate": "2024-01-15",
+      "readTime": "8 min read",
+      "tags": ["React", "Hooks", "JavaScript", "Frontend"],
+      "category": "Tutorial",
+      "featured": true,
+      "seoKeywords": ["react hooks", "useState", "useEffect", "react tutorial", "functional components"],
+      "metaDescription": "Learn React Hooks with this comprehensive guide covering useState, useEffect, and custom hooks with practical examples and best practices."
+    },
+    {
+      "id": "typescript-for-beginners",
+      "slug": "typescript-for-beginners",
+      "title": "TypeScript for JavaScript Developers",
+      "excerpt": "Learn TypeScript fundamentals and how it can improve your JavaScript development with type safety and better tooling.",
+      "thumbnail": "https://images.unsplash.com/photo-1516996087931-5ae405802f9f?w=800&h=400&fit=crop",
+      "author": "ZaynTheProgrammer",
+      "publishDate": "2024-01-20",
+      "readTime": "6 min read",
+      "tags": ["TypeScript", "JavaScript", "Types", "Development"],
+      "category": "Tutorial",
+      "featured": false,
+      "seoKeywords": ["typescript", "javascript", "type safety", "typescript tutorial", "static typing"],
+      "metaDescription": "Learn TypeScript fundamentals for JavaScript developers. Understand type safety, interfaces, and how TypeScript improves development workflow."
+    },
+    {
+      "id": "nextjs-app-router",
+      "slug": "nextjs-app-router",
+      "title": "Next.js App Router: Complete Guide",
+      "excerpt": "Explore the new App Router in Next.js 13+ with file-based routing, layouts, and server components.",
+      "thumbnail": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=400&fit=crop",
+      "author": "ZaynTheProgrammer",
+      "publishDate": "2024-01-25",
+      "readTime": "10 min read",
+      "tags": ["Next.js", "React", "App Router", "Server Components"],
+      "category": "Framework",
+      "featured": true,
+      "seoKeywords": ["nextjs", "app router", "server components", "nextjs 13", "react server components"],
+      "metaDescription": "Master the Next.js App Router with this complete guide covering layouts, server components, and modern routing patterns."
+    },
+    {
+      "id": "css-grid-flexbox",
+      "slug": "css-grid-flexbox",
+      "title": "CSS Grid vs Flexbox: When to Use Which",
+      "excerpt": "Understand the differences between CSS Grid and Flexbox and learn when to use each layout method for optimal results.",
+      "thumbnail": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop",
+      "author": "ZaynTheProgrammer",
+      "publishDate": "2024-02-01",
+      "readTime": "7 min read",
+      "tags": ["CSS", "Grid", "Flexbox", "Layout", "Frontend"],
+      "category": "CSS",
+      "featured": false,
+      "seoKeywords": ["css grid", "flexbox", "css layout", "responsive design", "css grid vs flexbox"],
+      "metaDescription": "Learn the differences between CSS Grid and Flexbox and when to use each layout method for optimal web development results."
+    },
+    {
+      "id": "react-performance-optimization",
+      "slug": "react-performance-optimization",
+      "title": "React Performance Optimization Techniques",
+      "excerpt": "Boost your React app performance with memoization, code splitting, and other optimization techniques.",
+      "thumbnail": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop",
+      "author": "ZaynTheProgrammer",
+      "publishDate": "2024-02-10",
+      "readTime": "9 min read",
+      "tags": ["React", "Performance", "Optimization", "Memoization"],
+      "category": "Performance",
+      "featured": true,
+      "seoKeywords": ["react performance", "react optimization", "useMemo", "useCallback", "react memo"],
+      "metaDescription": "Learn essential React performance optimization techniques including memoization, code splitting, and best practices for faster apps."
+    }
+  ],
+  "lastUpdated": "2024-02-10T10:00:00.000Z",
+  "totalPosts": 5
+}

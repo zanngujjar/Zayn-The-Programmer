@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, User } from "lucide-react"
-import type { BlogPost } from "@/lib/blog-posts"
+import type { BlogPost } from "@/lib/blog/content"
 
 interface BlogCardProps {
   post: BlogPost
@@ -14,7 +14,7 @@ interface BlogCardProps {
 export function BlogCard({ post }: BlogCardProps) {
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-      <Link href={`/how-to/${post.id}`}>
+      <Link href={`/how-to/${post.slug}`}>
         <CardHeader className="p-0">
           <div className="relative aspect-[16/9] overflow-hidden">
             <Image

@@ -1,0 +1,64 @@
+{
+  "tags": [
+    {
+      "name": "React",
+      "count": 3,
+      "color": "#61DAFB"
+    },
+    {
+      "name": "JavaScript",
+      "count": 2,
+      "color": "#F7DF1E"
+    },
+    {
+      "name": "TypeScript",
+      "count": 1,
+      "color": "#3178C6"
+    },
+    {
+      "name": "Next.js",
+      "count": 1,
+      "color": "#000000"
+    },
+    {
+      "name": "CSS",
+      "count": 1,
+      "color": "#1572B6"
+    },
+    {
+      "name": "Hooks",
+      "count": 1,
+      "color": "#61DAFB"
+    },
+    {
+      "name": "Frontend",
+      "count": 2,
+      "color": "#FF6B6B"
+    },
+    {
+      "name": "Performance",
+      "count": 1,
+      "color": "#4ECDC4"
+    },
+    {
+      "name": "Optimization",
+      "count": 1,
+      "color": "#45B7D1"
+    },
+    {
+      "name": "Layout",
+      "count": 1,
+      "color": "#96CEB4"
+    },
+    {
+      "name": "Grid",
+      "count": 1,
+      "color": "#FFEAA7"
+    },
+    {
+      "name": "Flexbox",
+      "count": 1,
+      "color": "#DDA0DD"
+    }
+  ]
+}

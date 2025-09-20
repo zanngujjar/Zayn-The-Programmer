@@ -1,0 +1,34 @@
+{
+  "posts": [
+    {
+      "id": "react-hooks-guide",
+      "slug": "react-hooks-guide",
+      "title": "Complete Guide to React Hooks",
+      "excerpt": "Master React Hooks with this comprehensive guide covering useState, useEffect, and custom hooks with practical examples.",
+      "thumbnail": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop",
+      "publishDate": "2024-01-15",
+      "tags": ["React", "Hooks", "JavaScript", "Frontend"],
+      "category": "Tutorial"
+    },
+    {
+      "id": "nextjs-app-router",
+      "slug": "nextjs-app-router",
+      "title": "Next.js App Router: Complete Guide",
+      "excerpt": "Explore the new App Router in Next.js 13+ with file-based routing, layouts, and server components.",
+      "thumbnail": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=400&fit=crop",
+      "publishDate": "2024-01-25",
+      "tags": ["Next.js", "React", "App Router", "Server Components"],
+      "category": "Framework"
+    },
+    {
+      "id": "react-performance-optimization",
+      "slug": "react-performance-optimization",
+      "title": "React Performance Optimization Techniques",
+      "excerpt": "Boost your React app performance with memoization, code splitting, and other optimization techniques.",
+      "thumbnail": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop",
+      "publishDate": "2024-02-10",
+      "tags": ["React", "Performance", "Optimization", "Memoization"],
+      "category": "Performance"
+    }
+  ]
+}

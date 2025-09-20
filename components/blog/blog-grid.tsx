@@ -1,7 +1,7 @@
 "use client"
 
 import { BlogCard } from "./blog-card"
-import type { BlogPost } from "@/lib/blog-posts"
+import type { BlogPost } from "@/lib/blog/content"
 
 interface BlogGridProps {
   posts: BlogPost[]
@@ -25,7 +25,7 @@ export function BlogGrid({ posts, className = "" }: BlogGridProps) {
   return (
     <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 ${className}`}>
       {posts.map((post) => (
-        <BlogCard key={post.id} post={post} />
+        <BlogCard key={post.slug} post={post} />
       ))}
     </div>
   )

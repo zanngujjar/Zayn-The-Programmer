@@ -1,0 +1,24 @@
+{
+  "categories": [
+    {
+      "name": "Tutorial",
+      "count": 2,
+      "description": "Step-by-step guides and tutorials"
+    },
+    {
+      "name": "Framework",
+      "count": 1,
+      "description": "Framework-specific guides and best practices"
+    },
+    {
+      "name": "CSS",
+      "count": 1,
+      "description": "CSS techniques and layout methods"
+    },
+    {
+      "name": "Performance",
+      "count": 1,
+      "description": "Performance optimization techniques"
+    }
+  ]
+}

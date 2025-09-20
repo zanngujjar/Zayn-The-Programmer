@@ -1,13 +1,17 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { Navigation } from "@/components/navigation"
 import { BlogGrid } from "@/components/blog/blog-grid"
+import { BlogCard } from "@/components/blog/blog-card"
 import { SearchFilter } from "@/components/blog/search-filter"
 import { BlogPagination } from "@/components/blog/blog-pagination"
 import { HeaderAd, SidebarAd } from "@/components/blog/ad-space"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { blogPosts, getFeaturedPosts, searchPosts, getPostsByCategory, getPostsByTag } from "@/lib/blog-posts"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import { useBlogData } from "@/hooks/use-blog-data"
+import { searchPosts } from "@/lib/blog/search"
 import { Star, BookOpen, TrendingUp } from "lucide-react"
 
 const POSTS_PER_PAGE = 6
@@ -18,27 +22,22 @@ export default function HowToPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [sortBy, setSortBy] = useState("date")
   const [currentPage, setCurrentPage] = useState(1)
-
-  const featuredPosts = getFeaturedPosts()
+  
+  const { posts: allPosts, featuredPosts, loading, error } = useBlogData()
 
   const filteredPosts = useMemo(() => {
-    let posts = [...blogPosts]
+    if (loading) return []
 
-    // Apply search
-    if (searchQuery) {
-      posts = searchPosts(searchQuery)
-    }
+    let posts = [...allPosts]
 
-    // Apply category filter
-    if (selectedCategory) {
-      posts = posts.filter(post => post.category === selectedCategory)
-    }
-
-    // Apply tags filter
-    if (selectedTags.length > 0) {
-      posts = posts.filter(post =>
-        selectedTags.every(tag => post.tags.includes(tag))
-      )
+    // Apply search and filters
+    if (searchQuery || selectedCategory || selectedTags.length > 0) {
+      const searchResults = searchPosts(posts, {
+        query: searchQuery,
+        category: selectedCategory,
+        tags: selectedTags
+      })
+      posts = searchResults.results.map(result => result.item)
     }
 
     // Apply sorting
@@ -57,7 +56,7 @@ export default function HowToPage() {
     })
 
     return posts
-  }, [searchQuery, selectedCategory, selectedTags, sortBy])
+  }, [allPosts, searchQuery, selectedCategory, selectedTags, sortBy, loading])
 
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
   const paginatedPosts = filteredPosts.slice(
@@ -70,8 +69,24 @@ export default function HowToPage() {
     setCurrentPage(1)
   }, [searchQuery, selectedCategory, selectedTags])
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Content</h1>
+            <p className="text-muted-foreground">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
+      
       {/* Header Ad */}
       <div className="container mx-auto px-4 pt-8">
         <HeaderAd />
@@ -97,7 +112,7 @@ export default function HowToPage() {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{blogPosts.length}</div>
+              <div className="text-2xl font-bold">{loading ? "..." : allPosts.length}</div>
             </CardContent>
           </Card>
 
@@ -118,7 +133,7 @@ export default function HowToPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {Array.from(new Set(blogPosts.map(post => post.category))).length}
+                {loading ? "..." : Array.from(new Set(allPosts.map(post => post.category))).length}
               </div>
             </CardContent>
           </Card>
@@ -136,7 +151,26 @@ export default function HowToPage() {
                   <Star className="h-5 w-5 text-primary" />
                   <h2 className="text-2xl font-bold">Featured Guides</h2>
                 </div>
-                <BlogGrid posts={featuredPosts} />
+
+                {/* Desktop Grid */}
+                <div className="hidden md:block">
+                  <BlogGrid posts={featuredPosts} />
+                </div>
+
+                {/* Mobile Carousel */}
+                <div className="md:hidden">
+                  <Carousel className="w-full max-w-xs mx-auto sm:max-w-sm">
+                    <CarouselContent>
+                      {featuredPosts.map((post) => (
+                        <CarouselItem key={post.slug}>
+                          <BlogCard post={post} />
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-2" />
+                    <CarouselNext className="right-2" />
+                  </Carousel>
+                </div>
               </div>
             )}
 
@@ -189,7 +223,7 @@ export default function HowToPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {Array.from(new Set(blogPosts.flatMap(post => post.tags)))
+                  {Array.from(new Set(allPosts.flatMap(post => post.tags)))
                     .slice(0, 12)
                     .map((tag) => (
                       <Badge
@@ -218,10 +252,10 @@ export default function HowToPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {blogPosts.slice(0, 5).map((post) => (
-                    <div key={post.id}>
+                  {allPosts.slice(0, 5).map((post) => (
+                    <div key={post.slug}>
                       <a
-                        href={`/how-to/${post.id}`}
+                        href={`/how-to/${post.slug}`}
                         className="text-sm font-medium hover:text-primary transition-colors line-clamp-2"
                       >
                         {post.title}

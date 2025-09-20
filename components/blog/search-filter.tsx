@@ -12,7 +12,6 @@ import {
   SelectValue
 } from "@/components/ui/select"
 import { Search, X, Filter } from "lucide-react"
-import { getAllTags, getAllCategories } from "@/lib/blog-posts"
 
 interface SearchFilterProps {
   searchQuery: string
@@ -36,8 +35,26 @@ export function SearchFilter({
   setSortBy,
 }: SearchFilterProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const allTags = getAllTags()
-  const allCategories = getAllCategories()
+  const [allTags, setAllTags] = useState<string[]>([])
+  const [allCategories, setAllCategories] = useState<string[]>([])
+
+  useEffect(() => {
+    const loadFilterData = async () => {
+      try {
+        // For now, use hardcoded values based on our content
+        // In a real app, you could fetch this from an API endpoint
+        const tags = ["React", "JavaScript", "TypeScript", "Next.js", "CSS", "Hooks", "Frontend", "Performance", "Optimization", "Layout", "Grid", "Flexbox"]
+        const categories = ["Tutorial", "Framework", "CSS", "Performance"]
+
+        setAllTags(tags)
+        setAllCategories(categories)
+      } catch (error) {
+        console.error('Error loading filter data:', error)
+      }
+    }
+
+    loadFilterData()
+  }, [])
 
   const handleTagToggle = (tag: string) => {
     if (selectedTags.includes(tag)) {

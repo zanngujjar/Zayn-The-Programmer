@@ -1,14 +1,18 @@
+"use client"
+
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Metadata } from "next"
-import { BlogContent } from "@/components/blog/blog-content"
+import { Suspense } from "react"
+import { Navigation } from "@/components/navigation"
+import { MarkdownContent } from "@/components/blog/markdown-content"
 import { HeaderAd, SidebarAd, FooterAd } from "@/components/blog/ad-space"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { getBlogPostById, blogPosts, getPostsByTag } from "@/lib/blog-posts"
+import { useBlogPost } from "@/hooks/use-blog-post"
+import { useBlogData } from "@/hooks/use-blog-data"
 import { Calendar, Clock, User, ArrowLeft, Share2, Facebook, Twitter, Linkedin } from "lucide-react"
 
 interface BlogPostPageProps {
@@ -17,64 +21,64 @@ interface BlogPostPageProps {
   }
 }
 
-export async function generateStaticParams() {
-  return blogPosts.map((post) => ({
-    slug: post.id,
-  }))
-}
-
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = getBlogPostById(params.slug)
-
-  if (!post) {
-    return {
-      title: "Post Not Found",
-    }
-  }
-
-  return {
-    title: `${post.title} | ZaynTheProgrammer`,
-    description: post.metaDescription,
-    keywords: post.seoKeywords.join(", "),
-    openGraph: {
-      title: post.title,
-      description: post.metaDescription,
-      images: [post.thumbnail],
-      type: "article",
-      publishedTime: post.publishDate,
-      authors: [post.author],
-      tags: post.tags,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: post.title,
-      description: post.metaDescription,
-      images: [post.thumbnail],
-    },
-  }
-}
-
 export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = getBlogPostById(params.slug)
+  const { post, loading: postLoading, error: postError } = useBlogPost(params.slug)
+  const { posts: allPosts } = useBlogData()
+
+  if (postError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Post</h1>
+            <p className="text-muted-foreground">{postError}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (postLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-12">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-muted rounded w-1/2 mb-8"></div>
+            <div className="h-64 bg-muted rounded mb-8"></div>
+            <div className="space-y-4">
+              <div className="h-4 bg-muted rounded"></div>
+              <div className="h-4 bg-muted rounded w-5/6"></div>
+              <div className="h-4 bg-muted rounded w-4/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!post) {
     notFound()
   }
 
   // Get related posts based on shared tags
-  const relatedPosts = blogPosts
-    .filter(p => p.id !== post.id && p.tags.some(tag => post.tags.includes(tag)))
+  const relatedPosts = allPosts
+    .filter(p => p.slug !== post.slug && p.tags.some(tag => post.tags.includes(tag)))
     .slice(0, 3)
 
   // Get previous and next posts
-  const currentIndex = blogPosts.findIndex(p => p.id === post.id)
-  const previousPost = currentIndex > 0 ? blogPosts[currentIndex - 1] : null
-  const nextPost = currentIndex < blogPosts.length - 1 ? blogPosts[currentIndex + 1] : null
+  const currentIndex = allPosts.findIndex(p => p.slug === post.slug)
+  const previousPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null
+  const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null
 
-  const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com'}/how-to/${post.id}`
+  const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com'}/how-to/${post.slug}`
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
+      
       {/* Header Ad */}
       <div className="container mx-auto px-4 pt-8">
         <HeaderAd />
@@ -178,9 +182,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             </header>
 
             {/* Post Content */}
-            <div className="prose prose-lg max-w-none">
-              <BlogContent content={post.content} />
-            </div>
+            <Suspense fallback={<div className="animate-pulse bg-muted h-96 rounded"></div>}>
+              <MarkdownContent content={post.content} />
+            </Suspense>
 
             {/* Post Navigation */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-12 pt-8 border-t">
@@ -262,23 +266,15 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               <SidebarAd />
             </div>
 
-            {/* Table of Contents */}
+            {/* Post Overview */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Table of Contents</CardTitle>
+                <CardTitle className="text-lg">Post Overview</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  {post.content
-                    .filter(item => item.type === 'heading')
-                    .map((heading, index) => (
-                      <li key={index} className={`${heading.level === 2 ? 'font-medium' : 'ml-4 text-muted-foreground'}`}>
-                        <a href={`#heading-${index}`} className="hover:text-primary transition-colors">
-                          {heading.text}
-                        </a>
-                      </li>
-                    ))}
-                </ul>
+              <CardContent className="text-sm space-y-2">
+                <p className="text-muted-foreground">
+                  This comprehensive guide covers the key concepts and practical implementation details you need to know.
+                </p>
               </CardContent>
             </Card>
 
