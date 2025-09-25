@@ -195,3 +195,74 @@ export async function trackHowToPostView(slug: string, data: ViewTrackingData = 
     return false
   }
 }
+
+// Get all categories by extracting from posts
+export async function getCategories(): Promise<Array<{
+  id: string
+  name: string
+  slug: string
+  color: string
+  icon: string
+}>> {
+  try {
+    console.log('Fetching categories by extracting from posts')
+    // Get a sample of posts to extract categories from
+    const posts = await getHowToPosts({ limit: 100 })
+    
+    if (posts.length === 0) {
+      console.log('No posts found to extract categories from')
+      return []
+    }
+    
+    // Extract unique categories from posts
+    const categoryMap = new Map<string, {
+      id: string
+      name: string
+      slug: string
+      color: string
+      icon: string
+    }>()
+    
+    posts.forEach(post => {
+      if (post.category && !categoryMap.has(post.category.slug)) {
+        categoryMap.set(post.category.slug, {
+          id: post.category.id,
+          name: post.category.name,
+          slug: post.category.slug,
+          color: post.category.color,
+          icon: post.category.icon,
+        })
+      }
+    })
+    
+    const categories = Array.from(categoryMap.values())
+    console.log('Extracted categories from posts:', categories)
+    
+    return categories
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+    return []
+  }
+}
+
+// Get popular how-to posts
+export async function getPopularHowToPosts(page: number = 1, limit: number = 20): Promise<HowToPost[]> {
+  try {
+    console.log('Fetching popular posts using getHowToPosts with sort=popular')
+    return await getHowToPosts({ sort: 'popular', page, limit })
+  } catch (error) {
+    console.error('Error fetching popular how-to posts:', error)
+    return []
+  }
+}
+
+// Get recent how-to posts
+export async function getRecentHowToPosts(page: number = 1, limit: number = 20): Promise<HowToPost[]> {
+  try {
+    console.log('Fetching recent posts using getHowToPosts with sort=recent')
+    return await getHowToPosts({ sort: 'recent', page, limit })
+  } catch (error) {
+    console.error('Error fetching recent how-to posts:', error)
+    return []
+  }
+}

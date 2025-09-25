@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -8,72 +8,191 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Clock, Eye, Star, Filter } from "lucide-react"
+import { Search, Clock, Eye, Star, Filter, TrendingUp } from "lucide-react"
 import Link from "next/link"
-import { getHowToPosts, getFeaturedHowToPosts, type HowToPost, type HowToApiParams } from "@/lib/how-to-api"
+import { 
+  getHowToPosts, 
+  getFeaturedHowToPosts, 
+  getPopularHowToPosts,
+  getRecentHowToPosts,
+  getCategories,
+  type HowToPost, 
+  type HowToApiParams 
+} from "@/lib/how-to-api"
+import { FeaturedCarousel } from "@/components/how-to/featured-carousel"
+import { SectionCarousel } from "@/components/how-to/section-carousel"
+import { CategoryFilter, extractCategoriesFromPosts } from "@/components/how-to/category-filter"
+import { PostCard } from "@/components/how-to/post-card"
 import { formatDistanceToNow } from "date-fns"
 
 export default function HowToPage() {
   const [posts, setPosts] = useState<HowToPost[]>([])
   const [featuredPosts, setFeaturedPosts] = useState<HowToPost[]>([])
+  const [popularPosts, setPopularPosts] = useState<HowToPost[]>([])
+  const [recentPosts, setRecentPosts] = useState<HowToPost[]>([])
+  const [categories, setCategories] = useState<Array<{
+    id: string
+    name: string
+    slug: string
+    color: string
+    icon: string
+  }>>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<HowToApiParams['sort']>("featured")
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [allGuidesPage, setAllGuidesPage] = useState(1)
+  const [allGuidesPosts, setAllGuidesPosts] = useState<HowToPost[]>([])
+  const [allGuidesLoading, setAllGuidesLoading] = useState(false)
   const [showFeatured, setShowFeatured] = useState(true)
 
-  const loadPosts = async (params: HowToApiParams = {}) => {
+  const loadAllData = async () => {
     setLoading(true)
     try {
-      const [allPosts, featured] = await Promise.all([
-        getHowToPosts({ ...params, limit: 20 }),
-        getFeaturedHowToPosts(1, 6)
+      console.log('Starting to load all data...')
+      const [allPosts, featured, popular, recent, categoriesData] = await Promise.all([
+        getHowToPosts({ limit: 50 }), // Load more posts for filtering
+        getFeaturedHowToPosts(1, 10),
+        getPopularHowToPosts(1, 10),
+        getRecentHowToPosts(1, 10),
+        getCategories()
       ])
       
+      console.log('All API calls completed:')
+      console.log('- All posts:', allPosts.length)
+      console.log('- Featured posts:', featured.length)
+      console.log('- Popular posts:', popular.length)
+      console.log('- Recent posts:', recent.length)
+      console.log('- Categories:', categoriesData.length)
+      
       setPosts(allPosts)
+      setAllGuidesPosts(allPosts.slice(0, 9)) // Set only first 9 posts for "All Guides" section
       setFeaturedPosts(featured)
+      setPopularPosts(popular)
+      setRecentPosts(recent)
+      
+      // Use categories from API, or fallback to extracting from posts
+      if (categoriesData && categoriesData.length > 0) {
+        console.log('Using categories from API:', categoriesData)
+        setCategories(categoriesData)
+      } else {
+        // Fallback: extract categories from posts
+        console.log('API categories empty, extracting from posts. Posts count:', allPosts.length)
+        const extractedCategories = extractCategoriesFromPosts(allPosts)
+        console.log('Extracted categories from posts:', extractedCategories)
+        setCategories(extractedCategories)
+      }
     } catch (error) {
-      console.error("Error loading posts:", error)
+      console.error("Error loading data:", error)
+      // Even if there's an error, try to extract categories from any posts we might have
+      try {
+        const fallbackPosts = await getHowToPosts({ limit: 50 })
+        setPosts(fallbackPosts)
+        const extractedCategories = extractCategoriesFromPosts(fallbackPosts)
+        setCategories(extractedCategories)
+        console.log('Using fallback categories after error:', extractedCategories)
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError)
+      }
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadPosts({ sort: sortBy })
-  }, [sortBy])
+    loadAllData()
+  }, [])
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      loadPosts({ sort: sortBy })
-      return
+  // Debug: Log categories when they change
+  useEffect(() => {
+    console.log('Categories updated:', categories)
+  }, [categories])
+
+  // Debug: Log posts when they change
+  useEffect(() => {
+    console.log('Posts updated:', posts)
+    if (posts.length > 0) {
+      console.log('First post category:', posts[0]?.category)
     }
+  }, [posts])
 
-    setLoading(true)
-    try {
-      // For now, we'll filter client-side since the API doesn't have search
-      // In a real implementation, you'd want server-side search
-      const allPosts = await getHowToPosts({ sort: sortBy, limit: 100 })
-      const filteredPosts = allPosts.filter(post => 
+  // Debug: Log popular posts when they change
+  useEffect(() => {
+    console.log('Popular posts updated:', popularPosts)
+  }, [popularPosts])
+
+  // Debug: Log recent posts when they change
+  useEffect(() => {
+    console.log('Recent posts updated:', recentPosts)
+  }, [recentPosts])
+
+  const handleSearchAndFilter = () => {
+    let results = posts
+    console.log('Filtering posts. Total posts:', posts.length, 'Selected category:', selectedCategory, 'Search query:', searchQuery)
+    
+    // Apply category filter
+    if (selectedCategory) {
+      const beforeFilter = results.length
+      results = results.filter(post => post.category.slug === selectedCategory)
+      console.log(`Category filter applied: ${beforeFilter} -> ${results.length} posts`)
+    }
+    
+    // Apply search query
+    if (searchQuery.trim()) {
+      const beforeSearch = results.length
+      results = results.filter(post => 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.tags.some(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()))
       )
-      setPosts(filteredPosts)
+      console.log(`Search filter applied: ${beforeSearch} -> ${results.length} posts`)
+    }
+    
+    console.log('Final filtered results:', results.length)
+    return results
+  }
+
+  const handleCategoryChange = useCallback((category: string | null) => {
+    console.log('=== CATEGORY CHANGE CALLED ===')
+    console.log('New category:', category)
+    
+    setSelectedCategory(category)
+  }, [])
+
+  const loadMoreAllGuides = async () => {
+    setAllGuidesLoading(true)
+    try {
+      const nextPage = allGuidesPage + 1
+      console.log('Loading more all guides posts, page:', nextPage)
+      
+      const morePosts = await getHowToPosts({ 
+        page: nextPage, 
+        limit: 9 
+      })
+      
+      if (morePosts.length > 0) {
+        setAllGuidesPosts(prev => [...prev, ...morePosts])
+        setAllGuidesPage(nextPage)
+        console.log('Loaded more posts, total now:', allGuidesPosts.length + morePosts.length)
+      } else {
+        console.log('No more posts to load')
+      }
     } catch (error) {
-      console.error("Error searching posts:", error)
+      console.error('Error loading more posts:', error)
     } finally {
-      setLoading(false)
+      setAllGuidesLoading(false)
     }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch()
+      // Search is now handled by handleSearchAndFilter
     }
   }
 
-  const displayPosts = showFeatured && !searchQuery ? featuredPosts : posts
+  const filteredPosts = handleSearchAndFilter()
+  const hasActiveFilters = selectedCategory || searchQuery.trim()
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,9 +221,6 @@ export default function HowToPage() {
               className="pl-10"
             />
           </div>
-          <Button onClick={handleSearch} className="sm:w-auto">
-            Search
-          </Button>
           <div className="flex gap-2">
             <Select value={sortBy} onValueChange={(value) => setSortBy(value as HowToApiParams['sort'])}>
               <SelectTrigger className="w-[140px]">
@@ -117,15 +233,17 @@ export default function HowToPage() {
                 <SelectItem value="views">Most Views</SelectItem>
               </SelectContent>
             </Select>
-            <Button
-              variant={showFeatured ? "default" : "outline"}
-              onClick={() => setShowFeatured(!showFeatured)}
-              className="flex items-center gap-2"
-            >
-              <Star className="h-4 w-4" />
-              Featured
-            </Button>
           </div>
+        </div>
+
+        {/* Category Filter */}
+        <div className="mb-8">
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+            loading={loading}
+          />
         </div>
 
         {/* Loading State */}
@@ -135,120 +253,105 @@ export default function HowToPage() {
           </div>
         )}
 
-        {/* Posts Grid */}
+        {/* Content */}
         {!loading && (
           <>
-            {displayPosts.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">
-                  {searchQuery ? "No posts found matching your search." : "No posts available at the moment."}
-                </p>
+            {hasActiveFilters ? (
+              /* Filtered Results */
+              <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">
+                    {filteredPosts.length} {filteredPosts.length === 1 ? 'Post' : 'Posts'} Found
+                  </h2>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery("")
+                      setSelectedCategory(null)
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+                
+                {filteredPosts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-4xl mb-4">🔍</div>
+                    <h3 className="text-xl font-semibold mb-2">No posts found</h3>
+                    <p className="text-muted-foreground">
+                      Try adjusting your search terms or category filter.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredPosts.map((post) => (
+                      <PostCard key={post.id} post={post} />
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
-              <>
-                {showFeatured && !searchQuery && (
-                  <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-                      <Star className="h-6 w-6 text-yellow-500" />
-                      Featured Guides
-                    </h2>
-                  </div>
-                )}
+              /* Carousel Layout */
+              <div className="space-y-12">
+                {/* Featured Carousel */}
+                <FeaturedCarousel posts={featuredPosts} loading={loading} />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {displayPosts.map((post) => (
-                    <Card key={post.id} className="group hover:shadow-lg transition-shadow duration-300">
-                      <Link href={`/how-to/${post.slug}`}>
-                        <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
-                          {post.thumbnail_url ? (
-                            <img
-                              src={post.thumbnail_url}
-                              alt={post.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                              <div className="text-4xl opacity-50">{post.category.icon}</div>
-                            </div>
-                          )}
-                        </div>
-                        <CardHeader>
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge 
-                              variant="secondary" 
-                              style={{ backgroundColor: post.category.color + '20', color: post.category.color }}
-                            >
-                              {post.category.name}
-                            </Badge>
-                            {post.featured && (
-                              <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
-                                <Star className="h-3 w-3 mr-1" />
-                                Featured
-                              </Badge>
-                            )}
-                          </div>
-                          <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
-                            {post.title}
-                          </CardTitle>
-                          <CardDescription className="line-clamp-3">
-                            {post.excerpt}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between text-sm text-muted-foreground">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                {post.read_time}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-4 w-4" />
-                                {post.view_count.toLocaleString()}
-                              </div>
-                            </div>
-                            <div>
-                              {formatDistanceToNow(new Date(post.published_at), { addSuffix: true })}
-                            </div>
-                          </div>
-                          
-                          {post.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-3">
-                              {post.tags.slice(0, 3).map((tag) => (
-                                <Badge
-                                  key={tag.id}
-                                  variant="outline"
-                                  className="text-xs"
-                                  style={{ borderColor: tag.color + '40', color: tag.color }}
-                                >
-                                  {tag.name}
-                                </Badge>
-                              ))}
-                              {post.tags.length > 3 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{post.tags.length - 3}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Link>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Load More Button */}
-                {!showFeatured && posts.length >= 20 && (
-                  <div className="text-center mt-12">
-                    <Button 
-                      onClick={() => setCurrentPage(prev => prev + 1)}
-                      variant="outline"
-                      size="lg"
-                    >
-                      Load More Posts
-                    </Button>
-                  </div>
-                )}
-              </>
+                {/* Popular Posts Carousel */}
+                <SectionCarousel
+                  title="Popular This Week"
+                  posts={popularPosts}
+                  loading={loading}
+                  showViewAll={true}
+                  viewAllHref="/how-to?sort=popular"
+                  icon={<TrendingUp className="h-5 w-5" />}
+                />
+                
+                {/* Recent Posts Carousel */}
+                <SectionCarousel
+                  title="Recently Published"
+                  posts={recentPosts}
+                  loading={loading}
+                  showViewAll={true}
+                  viewAllHref="/how-to?sort=recent"
+                  icon={<Clock className="h-5 w-5" />}
+                />
+                
+                 {/* All Posts Grid */}
+                 <div className="space-y-6">
+                   <div className="flex items-center justify-between">
+                     <h2 className="text-2xl font-bold text-foreground">All Guides</h2>
+                     <Link href="/how-to?view=all">
+                       <Button variant="outline">
+                         View All
+                       </Button>
+                     </Link>
+                   </div>
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     {allGuidesPosts.map((post) => (
+                       <PostCard key={post.id} post={post} />
+                     ))}
+                   </div>
+                   
+                   <div className="text-center">
+                     <Button 
+                       variant="outline"
+                       size="lg"
+                       onClick={loadMoreAllGuides}
+                       disabled={allGuidesLoading}
+                     >
+                       {allGuidesLoading ? (
+                         <>
+                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                           Loading...
+                         </>
+                       ) : (
+                         'Load More Posts'
+                       )}
+                     </Button>
+                   </div>
+                 </div>
+              </div>
             )}
           </>
         )}
