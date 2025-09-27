@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -39,6 +39,7 @@ export default function HowToPage() {
   }>>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<HowToApiParams['sort']>("featured")
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -104,6 +105,15 @@ export default function HowToPage() {
     loadAllData()
   }, [])
 
+  // Debounce search query to reduce input delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 150) // 150ms debounce
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
   // Debug: Log categories when they change
   useEffect(() => {
     console.log('Categories updated:', categories)
@@ -127,31 +137,27 @@ export default function HowToPage() {
     console.log('Recent posts updated:', recentPosts)
   }, [recentPosts])
 
-  const handleSearchAndFilter = () => {
+  // Memoize filtered posts to prevent unnecessary recalculations
+  const filteredPosts = useMemo(() => {
     let results = posts
-    console.log('Filtering posts. Total posts:', posts.length, 'Selected category:', selectedCategory, 'Search query:', searchQuery)
     
     // Apply category filter
     if (selectedCategory) {
-      const beforeFilter = results.length
       results = results.filter(post => post.category.slug === selectedCategory)
-      console.log(`Category filter applied: ${beforeFilter} -> ${results.length} posts`)
     }
     
-    // Apply search query
-    if (searchQuery.trim()) {
-      const beforeSearch = results.length
+    // Apply debounced search query
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase()
       results = results.filter(post => 
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.tags.some(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        post.title.toLowerCase().includes(query) ||
+        post.excerpt.toLowerCase().includes(query) ||
+        post.tags.some(tag => tag.name.toLowerCase().includes(query))
       )
-      console.log(`Search filter applied: ${beforeSearch} -> ${results.length} posts`)
     }
     
-    console.log('Final filtered results:', results.length)
     return results
-  }
+  }, [posts, selectedCategory, debouncedSearchQuery])
 
   const handleCategoryChange = useCallback((category: string | null) => {
     console.log('=== CATEGORY CHANGE CALLED ===')
@@ -185,14 +191,13 @@ export default function HowToPage() {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      // Search is now handled by handleSearchAndFilter
+      // Search is now handled by filteredPosts memoization
     }
-  }
+  }, [])
 
-  const filteredPosts = handleSearchAndFilter()
-  const hasActiveFilters = selectedCategory || searchQuery.trim()
+  const hasActiveFilters = selectedCategory || debouncedSearchQuery.trim()
 
   return (
     <div className="min-h-screen bg-background">
@@ -246,19 +251,98 @@ export default function HowToPage() {
           />
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        )}
+        {/* Content with Reserved Space */}
+        <div className="min-h-[2000px]"> {/* Reserve space to prevent layout shift */}
+          {loading ? (
+            <div className="space-y-12">
+              {/* Featured Section Placeholder */}
+              <div className="min-h-[400px]">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="animate-pulse bg-muted rounded h-6 w-6"></div>
+                  <div className="animate-pulse bg-muted rounded h-8 w-48"></div>
+                </div>
+                <div className="flex gap-4 overflow-hidden">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3">
+                      <div className="animate-pulse">
+                        <div className="bg-muted rounded-lg h-48 mb-4"></div>
+                        <div className="space-y-2">
+                          <div className="bg-muted h-4 rounded w-3/4"></div>
+                          <div className="bg-muted h-3 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-        {/* Content */}
-        {!loading && (
+              {/* Popular Section Placeholder */}
+              <div className="min-h-[350px]">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="animate-pulse bg-muted rounded h-5 w-5"></div>
+                  <div className="animate-pulse bg-muted rounded h-6 w-40"></div>
+                </div>
+                <div className="flex gap-4 overflow-hidden">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex-shrink-0 w-80">
+                      <div className="animate-pulse">
+                        <div className="bg-muted rounded-lg h-40 mb-3"></div>
+                        <div className="space-y-2">
+                          <div className="bg-muted h-4 rounded w-3/4"></div>
+                          <div className="bg-muted h-3 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Section Placeholder */}
+              <div className="min-h-[350px]">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="animate-pulse bg-muted rounded h-5 w-5"></div>
+                  <div className="animate-pulse bg-muted rounded h-6 w-40"></div>
+                </div>
+                <div className="flex gap-4 overflow-hidden">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex-shrink-0 w-80">
+                      <div className="animate-pulse">
+                        <div className="bg-muted rounded-lg h-40 mb-3"></div>
+                        <div className="space-y-2">
+                          <div className="bg-muted h-4 rounded w-3/4"></div>
+                          <div className="bg-muted h-3 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* All Guides Section Placeholder */}
+              <div className="min-h-[600px]">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="animate-pulse bg-muted rounded h-8 w-32"></div>
+                  <div className="animate-pulse bg-muted rounded h-10 w-20"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-muted rounded-lg h-48 mb-4"></div>
+                      <div className="space-y-2">
+                        <div className="bg-muted h-4 rounded w-3/4"></div>
+                        <div className="bg-muted h-3 rounded w-1/2"></div>
+                        <div className="bg-muted h-3 rounded w-2/3"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
           <>
             {hasActiveFilters ? (
               /* Filtered Results */
-              <div className="space-y-8">
+              <div className="space-y-8 min-h-[400px]"> {/* Reserve consistent height */}
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold text-foreground">
                     {filteredPosts.length} {filteredPosts.length === 1 ? 'Post' : 'Posts'} Found
@@ -317,7 +401,7 @@ export default function HowToPage() {
                 />
                 
                  {/* All Posts Grid */}
-                 <div className="space-y-6">
+                 <div className="space-y-6 min-h-[600px]"> {/* Reserve consistent height */}
                    <div className="flex items-center justify-between">
                      <h2 className="text-2xl font-bold text-foreground">All Guides</h2>
                      <Link href="/how-to?view=all">
@@ -354,7 +438,8 @@ export default function HowToPage() {
               </div>
             )}
           </>
-        )}
+          )}
+        </div>
       </main>
       
       <Footer />

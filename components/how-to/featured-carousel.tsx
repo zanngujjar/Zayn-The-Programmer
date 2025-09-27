@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
+import { useNavigationState } from "@/hooks/use-navigation-state"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,12 @@ export function FeaturedCarousel({ posts, loading = false }: FeaturedCarouselPro
   const [api, setApi] = useState<any>()
   const [current, setCurrent] = useState(0)
   const [count, setCount] = useState(0)
+  const { isNavigating, navigate } = useNavigationState()
+
+  const handlePostClick = useCallback((e: React.MouseEvent, slug: string) => {
+    e.preventDefault()
+    navigate(`/how-to/${slug}`)
+  }, [navigate])
 
   useEffect(() => {
     if (!api) return
@@ -39,7 +46,7 @@ export function FeaturedCarousel({ posts, loading = false }: FeaturedCarouselPro
 
   if (loading) {
     return (
-      <div className="w-full">
+      <div className="w-full min-h-[400px]"> {/* Reserve consistent height */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <Star className="h-6 w-6 text-yellow-500" />
@@ -49,11 +56,12 @@ export function FeaturedCarousel({ posts, loading = false }: FeaturedCarouselPro
         <div className="flex gap-4 overflow-hidden">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3">
-              <div className="animate-pulse">
+              <div className="animate-pulse h-full">
                 <div className="bg-muted rounded-lg h-48 mb-4"></div>
                 <div className="space-y-2">
                   <div className="bg-muted h-4 rounded w-3/4"></div>
                   <div className="bg-muted h-3 rounded w-1/2"></div>
+                  <div className="bg-muted h-3 rounded w-2/3"></div>
                 </div>
               </div>
             </div>
@@ -82,7 +90,7 @@ export function FeaturedCarousel({ posts, loading = false }: FeaturedCarouselPro
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full min-h-[400px]"> {/* Reserve consistent height */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Star className="h-6 w-6 text-yellow-500" />
@@ -115,14 +123,20 @@ export function FeaturedCarousel({ posts, loading = false }: FeaturedCarouselPro
         <CarouselContent className="-ml-2 md:-ml-4">
           {posts.map((post) => (
             <CarouselItem key={post.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-              <Link href={`/how-to/${post.slug}`}>
-                <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
+              <div 
+                onClick={(e) => handlePostClick(e, post.slug)}
+                className={`cursor-pointer ${isNavigating ? "pointer-events-none opacity-75" : ""}`}
+              >
+                <Card className="group hover:shadow-xl transition-all duration-200 overflow-hidden h-full">
                   <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
                     {post.thumbnail_url ? (
                       <img
                         src={post.thumbnail_url}
                         alt={post.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
@@ -181,7 +195,7 @@ export function FeaturedCarousel({ posts, loading = false }: FeaturedCarouselPro
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>

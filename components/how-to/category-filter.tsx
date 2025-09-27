@@ -32,7 +32,7 @@ export function CategoryFilter({
 
   if (loading) {
     return (
-      <div className="w-full">
+      <div className="w-full min-h-[80px]"> {/* Reserve consistent height */}
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-5 w-5 text-muted-foreground" />
           <span className="text-sm font-medium text-muted-foreground">Filter by Category</span>
@@ -61,7 +61,7 @@ export function CategoryFilter({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full min-h-[80px]"> {/* Reserve consistent height */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-muted-foreground" />

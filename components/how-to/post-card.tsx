@@ -1,12 +1,14 @@
 "use client"
 
 import Link from "next/link"
+import { useState, useCallback, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Clock, Eye, Star, ArrowRight } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { type HowToPost } from "@/lib/how-to-api"
+import { useNavigationState } from "@/hooks/use-navigation-state"
 
 interface PostCardProps {
   post: HowToPost
@@ -17,10 +19,23 @@ interface PostCardProps {
 export function PostCard({ post, variant = "default", showReadMore = true }: PostCardProps) {
   const isFeatured = variant === "featured"
   const isCompact = variant === "compact"
+  const { isNavigating, navigate } = useNavigationState()
+
+  // Optimized click handler with immediate feedback
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    navigate(`/how-to/${post.slug}`)
+  }, [navigate, post.slug])
+
+  // Memoize the post URL to prevent unnecessary re-renders
+  const postUrl = useMemo(() => `/how-to/${post.slug}`, [post.slug])
 
   return (
-    <Link href={`/how-to/${post.slug}`}>
-      <Card className={`group hover:shadow-lg transition-all duration-300 overflow-hidden h-full ${
+    <div 
+      onClick={handleClick}
+      className={`cursor-pointer ${isNavigating ? "pointer-events-none opacity-75" : ""}`}
+    >
+      <Card className={`group hover:shadow-lg transition-all duration-200 overflow-hidden h-full ${
         isFeatured ? "hover:shadow-xl" : ""
       }`}>
         <div className={`bg-muted rounded-t-lg overflow-hidden ${
@@ -31,6 +46,9 @@ export function PostCard({ post, variant = "default", showReadMore = true }: Pos
               src={post.thumbnail_url}
               alt={post.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
@@ -111,6 +129,6 @@ export function PostCard({ post, variant = "default", showReadMore = true }: Pos
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   )
 }
