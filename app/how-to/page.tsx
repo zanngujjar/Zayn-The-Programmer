@@ -208,7 +208,7 @@ export default function HowToPage() {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
         {/* Mobile Inline Ad - Only visible on mobile */}
         <div className="block md:hidden ads-inline">
-          <InlineAd adSlot={getAdSlot("1234567890")} />
+          <InlineAd adSlot="7596902180" />
         </div>
         {/* Header */}
         <div className="text-center mb-12">
@@ -452,8 +452,8 @@ export default function HowToPage() {
           {/* Desktop Sidebar Ad - Only visible on desktop */}
           <div className="hidden lg:block ads-sidebar-container">
             <div className="ads-sidebar">
-              <SidebarAd adSlot={getAdSlot("1234567891")} />
-              <SidebarAd adSlot={getAdSlot("1234567892")} />
+              <SidebarAd adSlot="3670277222" />
+              <SidebarAd adSlot="2671878565" />
             </div>
           </div>
         </div>

@@ -236,7 +236,7 @@ export default function HowToPostPage() {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[1200px] max-w-7xl"> {/* Reserve space to prevent layout shift */}
         {/* Mobile Inline Ad - Only visible on mobile */}
         <div className="block lg:hidden ads-inline">
-          <InlineAd adSlot={getAdSlot("1234567893")} />
+          <InlineAd adSlot="8194285092" />
         </div>
         {/* Back Button */}
         <div className="mb-6">
@@ -365,7 +365,7 @@ export default function HowToPostPage() {
 
           {/* Mobile Inline Ad - Between content sections */}
           <div className="block lg:hidden ads-inline">
-            <InlineAd adSlot={getAdSlot("1234567894")} />
+            <InlineAd adSlot="6347399696" />
           </div>
 
           {/* Article Footer */}
@@ -400,8 +400,8 @@ export default function HowToPostPage() {
           {/* Desktop Sidebar Ad - Only visible on desktop */}
           <div className="hidden lg:block ads-sidebar-container">
             <div className="ads-sidebar">
-              <SidebarAd adSlot={getAdSlot("1234567895")} />
-              <SidebarAd adSlot={getAdSlot("1234567896")} />
+              <SidebarAd adSlot="1712637221" />
+              <SidebarAd adSlot="1973040416" />
             </div>
           </div>
         </div>

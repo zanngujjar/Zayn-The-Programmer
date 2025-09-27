@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { ADS_CONFIG } from "@/lib/ads-config"
 
 interface GoogleAdsProps {
   /**
-   * Google AdSense ad unit ID (e.g., "ca-pub-1234567890123456")
+   * Google AdSense ad unit ID (e.g., "1234567890")
    */
   adSlot: string
   /**
@@ -74,7 +75,7 @@ export function GoogleAds({
           const adElement = document.createElement("ins")
           adElement.className = "adsbygoogle"
           adElement.style.display = "block"
-          adElement.setAttribute("data-ad-client", adSlot)
+          adElement.setAttribute("data-ad-client", ADS_CONFIG.PUBLISHER_ID)
           adElement.setAttribute("data-ad-slot", adSlot)
           adElement.setAttribute("data-ad-format", format)
           
