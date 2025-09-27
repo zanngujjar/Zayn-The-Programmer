@@ -7,6 +7,7 @@ import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
+import "../styles/ads.css"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],

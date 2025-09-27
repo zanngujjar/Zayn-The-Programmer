@@ -1,0 +1,89 @@
+/* Google Ads Responsive Styles */
+
+/* Ensure ads don't cause horizontal overflow */
+.google-ads-container {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Responsive ad sizing */
+@media (max-width: 1023px) {
+  .google-ads-container {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .google-ads-container {
+    max-width: 280px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .google-ads-container {
+    max-width: 300px;
+  }
+}
+
+/* Ensure proper spacing and prevent layout shift */
+.ads-sidebar {
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+/* Mobile ad spacing */
+@media (max-width: 1023px) {
+  .ads-inline {
+    margin: 1.5rem 0;
+    max-width: 100%;
+  }
+}
+
+/* Desktop ad spacing */
+@media (min-width: 1024px) {
+  .ads-sidebar {
+    margin-left: 1.5rem;
+  }
+}
+
+/* Prevent ads from breaking layout on very small screens */
+@media (max-width: 640px) {
+  .google-ads-container {
+    min-height: 100px;
+    max-height: 250px;
+  }
+}
+
+/* Ensure proper flex behavior */
+.ads-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .ads-layout {
+    flex-direction: row;
+    gap: 2rem;
+  }
+}
+
+/* Main content should not overflow */
+.ads-main-content {
+  flex: 1;
+  min-width: 0; /* Prevents flex item from overflowing */
+}
+
+/* Sidebar should be fixed width */
+.ads-sidebar-container {
+  flex-shrink: 0;
+  width: 18rem; /* 288px */
+}
+
+@media (min-width: 1280px) {
+  .ads-sidebar-container {
+    width: 20rem; /* 320px */
+  }
+}

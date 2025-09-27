@@ -14,6 +14,8 @@ import { getHowToPost, trackHowToPostView, type HowToPost } from "@/lib/how-to-a
 import { sanitizeContent } from "@/lib/how-to-utils"
 import { formatDistanceToNow } from "date-fns"
 import { notFound } from "next/navigation"
+import { SidebarAd, InlineAd } from "@/components/google-ads"
+import { getAdSlot } from "@/lib/ads-config"
 
 export default function HowToPostPage() {
   const params = useParams()
@@ -231,7 +233,11 @@ export default function HowToPostPage() {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[1200px]"> {/* Reserve space to prevent layout shift */}
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[1200px] max-w-7xl"> {/* Reserve space to prevent layout shift */}
+        {/* Mobile Inline Ad - Only visible on mobile */}
+        <div className="block lg:hidden ads-inline">
+          <InlineAd adSlot={getAdSlot("1234567893")} />
+        </div>
         {/* Back Button */}
         <div className="mb-6">
           <Link href="/how-to" prefetch={true}>
@@ -243,7 +249,8 @@ export default function HowToPostPage() {
         </div>
 
         {/* Article Header */}
-        <article className="max-w-4xl mx-auto">
+        <div className="ads-layout">
+          <article className="ads-main-content">
           <header className="mb-8">
             {/* Category and Featured Badge */}
             <div className="flex items-center gap-2 mb-4">
@@ -356,6 +363,11 @@ export default function HowToPostPage() {
             />
           </div>
 
+          {/* Mobile Inline Ad - Between content sections */}
+          <div className="block lg:hidden ads-inline">
+            <InlineAd adSlot={getAdSlot("1234567894")} />
+          </div>
+
           {/* Article Footer */}
           <footer className="mt-12 pt-8 border-t">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -383,7 +395,16 @@ export default function HowToPostPage() {
               </div>
             </div>
           </footer>
-        </article>
+          </article>
+          
+          {/* Desktop Sidebar Ad - Only visible on desktop */}
+          <div className="hidden lg:block ads-sidebar-container">
+            <div className="ads-sidebar">
+              <SidebarAd adSlot={getAdSlot("1234567895")} />
+              <SidebarAd adSlot={getAdSlot("1234567896")} />
+            </div>
+          </div>
+        </div>
       </main>
       
       <Footer />

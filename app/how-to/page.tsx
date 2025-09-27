@@ -24,6 +24,8 @@ import { SectionCarousel } from "@/components/how-to/section-carousel"
 import { CategoryFilter, extractCategoriesFromPosts } from "@/components/how-to/category-filter"
 import { PostCard } from "@/components/how-to/post-card"
 import { formatDistanceToNow } from "date-fns"
+import { SidebarAd, InlineAd } from "@/components/google-ads"
+import { getAdSlot } from "@/lib/ads-config"
 
 export default function HowToPage() {
   const [posts, setPosts] = useState<HowToPost[]>([])
@@ -203,7 +205,11 @@ export default function HowToPage() {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
+        {/* Mobile Inline Ad - Only visible on mobile */}
+        <div className="block md:hidden ads-inline">
+          <InlineAd adSlot={getAdSlot("1234567890")} />
+        </div>
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 font-playfair">
@@ -252,7 +258,9 @@ export default function HowToPage() {
         </div>
 
         {/* Content with Reserved Space */}
-        <div className="min-h-[2000px]"> {/* Reserve space to prevent layout shift */}
+        <div className="min-h-[2000px] ads-layout"> {/* Reserve space to prevent layout shift */}
+          {/* Main Content */}
+          <div className="ads-main-content">
           {loading ? (
             <div className="space-y-12">
               {/* Featured Section Placeholder */}
@@ -367,7 +375,7 @@ export default function HowToPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                     {filteredPosts.map((post) => (
                       <PostCard key={post.id} post={post} />
                     ))}
@@ -411,7 +419,7 @@ export default function HowToPage() {
                      </Link>
                    </div>
                    
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                      {allGuidesPosts.map((post) => (
                        <PostCard key={post.id} post={post} />
                      ))}
@@ -439,6 +447,15 @@ export default function HowToPage() {
             )}
           </>
           )}
+          </div>
+          
+          {/* Desktop Sidebar Ad - Only visible on desktop */}
+          <div className="hidden lg:block ads-sidebar-container">
+            <div className="ads-sidebar">
+              <SidebarAd adSlot={getAdSlot("1234567891")} />
+              <SidebarAd adSlot={getAdSlot("1234567892")} />
+            </div>
+          </div>
         </div>
       </main>
       
