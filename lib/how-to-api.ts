@@ -209,6 +209,11 @@ export async function getCategories(): Promise<Array<{
     // Get a sample of posts to extract categories from
     const posts = await getHowToPosts({ limit: 100 })
     
+    console.log('Posts fetched for category extraction:', posts.length)
+    if (posts.length > 0) {
+      console.log('First post category:', posts[0]?.category)
+    }
+    
     if (posts.length === 0) {
       console.log('No posts found to extract categories from')
       return []

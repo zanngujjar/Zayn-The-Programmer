@@ -4,6 +4,8 @@
 .google-ads-container {
   max-width: 100%;
   overflow: hidden;
+  min-width: 280px; /* Ensure minimum width for AdSense */
+  width: 100%;
 }
 
 /* Responsive ad sizing */
@@ -11,6 +13,7 @@
   .google-ads-container {
     max-width: 100%;
     margin: 0 auto;
+    min-width: 320px; /* Mobile minimum width */
   }
 }
 

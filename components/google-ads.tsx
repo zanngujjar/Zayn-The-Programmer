@@ -68,8 +68,18 @@ export function GoogleAds({
     const initializeAd = () => {
       if (adRef.current && window.adsbygoogle) {
         try {
+          // Ensure container has proper dimensions
+          const container = adRef.current
+          const rect = container.getBoundingClientRect()
+          
+          // If container has no width, wait a bit and try again
+          if (rect.width === 0) {
+            setTimeout(initializeAd, 100)
+            return
+          }
+          
           // Clear any existing ads
-          adRef.current.innerHTML = ""
+          container.innerHTML = ""
           
           // Create the ad element
           const adElement = document.createElement("ins")
@@ -85,7 +95,7 @@ export function GoogleAds({
             adElement.setAttribute("data-ad-slot", adSize)
           }
 
-          adRef.current.appendChild(adElement)
+          container.appendChild(adElement)
           
           // Push the ad to Google AdSense
           ;(window.adsbygoogle = window.adsbygoogle || []).push({})
@@ -95,20 +105,27 @@ export function GoogleAds({
       }
     }
 
-    // Wait for the script to load
-    if (window.adsbygoogle) {
-      initializeAd()
-    } else {
-      const checkForAds = setInterval(() => {
+    // Wait for the script to load and component to be fully mounted
+    const startInitialization = () => {
+      // Add a small delay to ensure the component is fully rendered
+      setTimeout(() => {
         if (window.adsbygoogle) {
-          clearInterval(checkForAds)
           initializeAd()
+        } else {
+          const checkForAds = setInterval(() => {
+            if (window.adsbygoogle) {
+              clearInterval(checkForAds)
+              initializeAd()
+            }
+          }, 100)
+          
+          // Cleanup interval after 10 seconds
+          setTimeout(() => clearInterval(checkForAds), 10000)
         }
-      }, 100)
-      
-      // Cleanup interval after 10 seconds
-      setTimeout(() => clearInterval(checkForAds), 10000)
+      }, 200) // 200ms delay to ensure proper rendering
     }
+    
+    startInitialization()
 
     // Handle window resize
     const handleResize = () => {

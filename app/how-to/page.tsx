@@ -1,20 +1,21 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
+import { useSearchParams } from "next/navigation"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Clock, Eye, Star, Filter, TrendingUp } from "lucide-react"
+import { Search, Clock, Eye, Star, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { 
   getHowToPosts, 
   getFeaturedHowToPosts, 
   getPopularHowToPosts,
   getRecentHowToPosts,
+  getHowToPostsByCategory,
   getCategories,
   type HowToPost, 
   type HowToApiParams 
@@ -28,6 +29,7 @@ import { SidebarAd, InlineAd } from "@/components/google-ads"
 import { getAdSlot } from "@/lib/ads-config"
 
 export default function HowToPage() {
+  const searchParams = useSearchParams()
   const [posts, setPosts] = useState<HowToPost[]>([])
   const [featuredPosts, setFeaturedPosts] = useState<HowToPost[]>([])
   const [popularPosts, setPopularPosts] = useState<HowToPost[]>([])
@@ -42,55 +44,83 @@ export default function HowToPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState<HowToApiParams['sort']>("featured")
+  const [sortBy, setSortBy] = useState<HowToApiParams['sort']>("recent")
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [allGuidesPage, setAllGuidesPage] = useState(1)
   const [allGuidesPosts, setAllGuidesPosts] = useState<HowToPost[]>([])
   const [allGuidesLoading, setAllGuidesLoading] = useState(false)
   const [showFeatured, setShowFeatured] = useState(true)
+  const [viewAll, setViewAll] = useState(false)
 
   const loadAllData = async () => {
     setLoading(true)
     try {
       console.log('Starting to load all data...')
-      const [allPosts, featured, popular, recent, categoriesData] = await Promise.all([
-        getHowToPosts({ limit: 50 }), // Load more posts for filtering
-        getFeaturedHowToPosts(1, 10),
-        getPopularHowToPosts(1, 10),
-        getRecentHowToPosts(1, 10),
-        getCategories()
-      ])
       
-      console.log('All API calls completed:')
-      console.log('- All posts:', allPosts.length)
-      console.log('- Featured posts:', featured.length)
-      console.log('- Popular posts:', popular.length)
-      console.log('- Recent posts:', recent.length)
-      console.log('- Categories:', categoriesData.length)
-      
-      setPosts(allPosts)
-      setAllGuidesPosts(allPosts.slice(0, 9)) // Set only first 9 posts for "All Guides" section
-      setFeaturedPosts(featured)
-      setPopularPosts(popular)
-      setRecentPosts(recent)
-      
-      // Use categories from API, or fallback to extracting from posts
-      if (categoriesData && categoriesData.length > 0) {
-        console.log('Using categories from API:', categoriesData)
-        setCategories(categoriesData)
+      if (viewAll) {
+        // In view all mode, load all posts using separate API calls
+        const [allPosts, categoriesData] = await Promise.all([
+          getHowToPosts({ limit: 9 }),
+          getCategories()
+        ])
+        
+        console.log('View all mode - loaded posts:', allPosts.length)
+        setPosts(allPosts)
+        setAllGuidesPosts(allPosts)
+        
+        // Use categories from API, or fallback to extracting from posts
+        if (categoriesData && categoriesData.length > 0) {
+          console.log('Using categories from API:', categoriesData)
+          setCategories(categoriesData)
+        } else {
+          // Fallback: extract categories from posts
+          console.log('API categories empty, extracting from posts. Posts count:', allPosts.length)
+          const extractedCategories = extractCategoriesFromPosts(allPosts)
+          console.log('Extracted categories from posts:', extractedCategories)
+          setCategories(extractedCategories)
+        }
       } else {
-        // Fallback: extract categories from posts
-        console.log('API categories empty, extracting from posts. Posts count:', allPosts.length)
-        const extractedCategories = extractCategoriesFromPosts(allPosts)
-        console.log('Extracted categories from posts:', extractedCategories)
-        setCategories(extractedCategories)
+        // Normal mode - load all sections separately
+        const [allPosts, featured, popular, recent, categoriesData] = await Promise.all([
+          getHowToPosts({ limit: 9 }), // Load 9 posts for "All Guides" section
+          getFeaturedHowToPosts(1, 9), // Load 9 featured posts
+          getPopularHowToPosts(1, 9), // Load 9 popular posts
+          getRecentHowToPosts(1, 9), // Load 9 recent posts
+          getCategories()
+        ])
+        
+        console.log('All API calls completed:')
+        console.log('- All posts:', allPosts.length)
+        console.log('- Featured posts:', featured.length)
+        console.log('- Popular posts:', popular.length)
+        console.log('- Recent posts:', recent.length)
+        console.log('- Categories:', categoriesData.length)
+        console.log('- Categories data:', categoriesData)
+        
+        setPosts(allPosts)
+        setAllGuidesPosts(allPosts) // Set all 9 posts for "All Guides" section
+        setFeaturedPosts(featured)
+        setPopularPosts(popular)
+        setRecentPosts(recent)
+        
+        // Use categories from API, or fallback to extracting from posts
+        if (categoriesData && categoriesData.length > 0) {
+          console.log('Using categories from API:', categoriesData)
+          setCategories(categoriesData)
+        } else {
+          // Fallback: extract categories from posts
+          console.log('API categories empty, extracting from posts. Posts count:', allPosts.length)
+          const extractedCategories = extractCategoriesFromPosts(allPosts)
+          console.log('Extracted categories from posts:', extractedCategories)
+          setCategories(extractedCategories)
+        }
       }
     } catch (error) {
       console.error("Error loading data:", error)
       // Even if there's an error, try to extract categories from any posts we might have
       try {
-        const fallbackPosts = await getHowToPosts({ limit: 50 })
+        const fallbackPosts = await getHowToPosts({ limit: 9 })
         setPosts(fallbackPosts)
         const extractedCategories = extractCategoriesFromPosts(fallbackPosts)
         setCategories(extractedCategories)
@@ -103,9 +133,30 @@ export default function HowToPage() {
     }
   }
 
+  // Initialize state from URL parameters
+  useEffect(() => {
+    const categoryParam = searchParams.get('category')
+    const viewAllParam = searchParams.get('view') === 'all'
+    
+    if (categoryParam) {
+      setSelectedCategory(categoryParam)
+    }
+    if (viewAllParam) {
+      setViewAll(true)
+    }
+  }, [searchParams])
+
+  // Initial load - only runs once on mount
   useEffect(() => {
     loadAllData()
   }, [])
+
+  // Reload data when viewAll changes
+  useEffect(() => {
+    if (viewAll !== undefined) { // Only run if viewAll has been set
+      loadAllData()
+    }
+  }, [viewAll])
 
   // Debounce search query to reduce input delay
   useEffect(() => {
@@ -143,12 +194,8 @@ export default function HowToPage() {
   const filteredPosts = useMemo(() => {
     let results = posts
     
-    // Apply category filter
-    if (selectedCategory) {
-      results = results.filter(post => post.category.slug === selectedCategory)
-    }
-    
-    // Apply debounced search query
+    // Apply debounced search query only
+    // Category filtering is handled by API calls, not client-side filtering
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase()
       results = results.filter(post => 
@@ -158,14 +205,37 @@ export default function HowToPage() {
       )
     }
     
+    console.log('Filtered posts result:', results.length, 'from', posts.length, 'posts')
+    console.log('Search query:', debouncedSearchQuery)
+    console.log('Selected category:', selectedCategory)
     return results
-  }, [posts, selectedCategory, debouncedSearchQuery])
+  }, [posts, debouncedSearchQuery, selectedCategory])
 
-  const handleCategoryChange = useCallback((category: string | null) => {
+  const handleCategoryChange = useCallback(async (category: string | null) => {
     console.log('=== CATEGORY CHANGE CALLED ===')
     console.log('New category:', category)
     
     setSelectedCategory(category)
+    
+    // If a category is selected, load posts for that category using separate API call
+    if (category) {
+      setLoading(true)
+      setAllGuidesPage(1) // Reset page counter for new category
+      try {
+        const categoryPosts = await getHowToPostsByCategory(category, { limit: 9 })
+        setPosts(categoryPosts)
+        setAllGuidesPosts(categoryPosts)
+        console.log('Loaded category posts:', categoryPosts.length)
+      } catch (error) {
+        console.error('Error loading category posts:', error)
+      } finally {
+        setLoading(false)
+      }
+    } else {
+      // If no category selected, reload all posts
+      setAllGuidesPage(1) // Reset page counter
+      loadAllData()
+    }
   }, [])
 
   const loadMoreAllGuides = async () => {
@@ -174,17 +244,34 @@ export default function HowToPage() {
       const nextPage = allGuidesPage + 1
       console.log('Loading more all guides posts, page:', nextPage)
       
-      const morePosts = await getHowToPosts({ 
-        page: nextPage, 
-        limit: 9 
-      })
-      
-      if (morePosts.length > 0) {
-        setAllGuidesPosts(prev => [...prev, ...morePosts])
-        setAllGuidesPage(nextPage)
-        console.log('Loaded more posts, total now:', allGuidesPosts.length + morePosts.length)
+      // If a category is selected, load more posts for that category
+      if (selectedCategory) {
+        const morePosts = await getHowToPostsByCategory(selectedCategory, { 
+          page: nextPage, 
+          limit: 9 
+        })
+        
+        if (morePosts.length > 0) {
+          setAllGuidesPosts(prev => [...prev, ...morePosts])
+          setAllGuidesPage(nextPage)
+          console.log('Loaded more category posts, total now:', allGuidesPosts.length + morePosts.length)
+        } else {
+          console.log('No more category posts to load')
+        }
       } else {
-        console.log('No more posts to load')
+        // Load more general posts
+        const morePosts = await getHowToPosts({ 
+          page: nextPage, 
+          limit: 9 
+        })
+        
+        if (morePosts.length > 0) {
+          setAllGuidesPosts(prev => [...prev, ...morePosts])
+          setAllGuidesPage(nextPage)
+          console.log('Loaded more posts, total now:', allGuidesPosts.length + morePosts.length)
+        } else {
+          console.log('No more posts to load')
+        }
       }
     } catch (error) {
       console.error('Error loading more posts:', error)
@@ -199,7 +286,7 @@ export default function HowToPage() {
     }
   }, [])
 
-  const hasActiveFilters = selectedCategory || debouncedSearchQuery.trim()
+  const hasActiveFilters = debouncedSearchQuery.trim()
 
   return (
     <div className="min-h-screen bg-background">
@@ -220,7 +307,7 @@ export default function HowToPage() {
           </p>
         </div>
 
-        {/* Search and Filter Bar */}
+        {/* Search Bar */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -231,19 +318,6 @@ export default function HowToPage() {
               onKeyPress={handleKeyPress}
               className="pl-10"
             />
-          </div>
-          <div className="flex gap-2">
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as HowToApiParams['sort'])}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="featured">Featured</SelectItem>
-                <SelectItem value="recent">Recent</SelectItem>
-                <SelectItem value="popular">Popular</SelectItem>
-                <SelectItem value="views">Most Views</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
@@ -359,10 +433,9 @@ export default function HowToPage() {
                     variant="outline"
                     onClick={() => {
                       setSearchQuery("")
-                      setSelectedCategory(null)
                     }}
                   >
-                    Clear Filters
+                    Clear Search
                   </Button>
                 </div>
                 
@@ -382,31 +455,108 @@ export default function HowToPage() {
                   </div>
                 )}
               </div>
+            ) : viewAll ? (
+              /* View All Mode - Show all posts in grid format */
+              <div className="space-y-8 min-h-[400px]">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">All Posts</h2>
+                  <Link href="/how-to">
+                    <Button variant="outline">
+                      Back to Home
+                    </Button>
+                  </Link>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+                  {allGuidesPosts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+                
+                <div className="text-center">
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    onClick={loadMoreAllGuides}
+                    disabled={allGuidesLoading}
+                  >
+                    {allGuidesLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                        Loading...
+                      </>
+                    ) : (
+                      'Load More Posts'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : selectedCategory ? (
+              /* Category Filtered Layout - Show only filtered posts */
+              <div className="space-y-8 min-h-[400px]">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">
+                    {categories.find(cat => cat.slug === selectedCategory)?.name || 'Category'} Posts
+                  </h2>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedCategory(null)
+                    }}
+                  >
+                    Clear Category
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+                  {allGuidesPosts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+                
+                <div className="text-center">
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    onClick={loadMoreAllGuides}
+                    disabled={allGuidesLoading}
+                  >
+                    {allGuidesLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                        Loading...
+                      </>
+                    ) : (
+                      'Load More Posts'
+                    )}
+                  </Button>
+                </div>
+              </div>
             ) : (
-              /* Carousel Layout */
+              /* Full Carousel Layout - Show all sections */
               <div className="space-y-12">
                 {/* Featured Carousel */}
                 <FeaturedCarousel posts={featuredPosts} loading={loading} />
                 
-                {/* Popular Posts Carousel */}
-                <SectionCarousel
-                  title="Popular This Week"
-                  posts={popularPosts}
-                  loading={loading}
-                  showViewAll={true}
-                  viewAllHref="/how-to?sort=popular"
-                  icon={<TrendingUp className="h-5 w-5" />}
-                />
-                
-                {/* Recent Posts Carousel */}
-                <SectionCarousel
-                  title="Recently Published"
-                  posts={recentPosts}
-                  loading={loading}
-                  showViewAll={true}
-                  viewAllHref="/how-to?sort=recent"
-                  icon={<Clock className="h-5 w-5" />}
-                />
+                 {/* Popular Posts Carousel */}
+                 <SectionCarousel
+                   title="Popular This Week"
+                   posts={popularPosts}
+                   loading={loading}
+                   showViewAll={true}
+                   viewAllHref="/how-to?view=all"
+                   icon={<TrendingUp className="h-5 w-5" />}
+                 />
+                 
+                 {/* Recent Posts Carousel */}
+                 <SectionCarousel
+                   title="Recently Published"
+                   posts={recentPosts}
+                   loading={loading}
+                   showViewAll={true}
+                   viewAllHref="/how-to?view=all"
+                   icon={<Clock className="h-5 w-5" />}
+                 />
                 
                  {/* All Posts Grid */}
                  <div className="space-y-6 min-h-[600px]"> {/* Reserve consistent height */}
