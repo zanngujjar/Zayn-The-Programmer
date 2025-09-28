@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const seoTitle = post.seo_title || post.title
     
     return {
-      title: `${seoTitle} | How-To Guide`,
+      title: `${seoTitle}`,
       description: metaDescription,
       keywords: post.tags.map(tag => tag.name).join(", ") + ", how-to guide, tutorial, step-by-step",
       openGraph: {
