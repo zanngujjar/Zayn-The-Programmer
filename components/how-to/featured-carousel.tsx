@@ -96,13 +96,6 @@ export function FeaturedCarousel({ posts, loading = false }: FeaturedCarouselPro
           <Star className="h-6 w-6 text-yellow-500" />
           <h2 className="text-2xl font-bold text-foreground">Featured Guides</h2>
         </div>
-        {count > 1 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{current}</span>
-            <span>/</span>
-            <span>{count}</span>
-          </div>
-        )}
       </div>
 
       <Carousel

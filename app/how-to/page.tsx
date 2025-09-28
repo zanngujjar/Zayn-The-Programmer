@@ -543,8 +543,7 @@ export default function HowToPage() {
                    title="Popular This Week"
                    posts={popularPosts}
                    loading={loading}
-                   showViewAll={true}
-                   viewAllHref="/how-to?view=all"
+                   showViewAll={false}
                    icon={<TrendingUp className="h-5 w-5" />}
                  />
                  
@@ -553,8 +552,7 @@ export default function HowToPage() {
                    title="Recently Published"
                    posts={recentPosts}
                    loading={loading}
-                   showViewAll={true}
-                   viewAllHref="/how-to?view=all"
+                   showViewAll={false}
                    icon={<Clock className="h-5 w-5" />}
                  />
                 
@@ -562,11 +560,6 @@ export default function HowToPage() {
                  <div className="space-y-6 min-h-[600px]"> {/* Reserve consistent height */}
                    <div className="flex items-center justify-between">
                      <h2 className="text-2xl font-bold text-foreground">All Guides</h2>
-                     <Link href="/how-to?view=all">
-                       <Button variant="outline">
-                         View All
-                       </Button>
-                     </Link>
                    </div>
                    
                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
