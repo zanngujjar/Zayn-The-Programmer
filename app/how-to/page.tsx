@@ -200,7 +200,7 @@ export default function HowToPage() {
       const query = debouncedSearchQuery.toLowerCase()
       results = results.filter(post => 
         post.title.toLowerCase().includes(query) ||
-        post.excerpt.toLowerCase().includes(query) ||
+        post.excerpt?.toLowerCase().includes(query) ||
         post.tags.some(tag => tag.name.toLowerCase().includes(query))
       )
     }

@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Clock, Eye, Star, Share2, BookOpen, User } from "lucide-react"
 import Link from "next/link"
 import { getHowToPost, trackHowToPostView, type HowToPost } from "@/lib/how-to-api"
-import { sanitizeContent } from "@/lib/how-to-utils"
+import { sanitizeContent, generateMetaDescription } from "@/lib/how-to-utils"
 import { formatDistanceToNow } from "date-fns"
 import { notFound } from "next/navigation"
 import { SidebarAd, InlineAd } from "@/components/google-ads"
@@ -254,14 +254,16 @@ export default function HowToPostPage() {
           <header className="mb-8">
             {/* Category and Featured Badge */}
             <div className="flex items-center gap-2 mb-4">
-              <Badge 
-                variant="secondary" 
-                style={{ backgroundColor: post.category.color + '20', color: post.category.color }}
-                className="flex items-center gap-1"
-              >
-                <span className="text-lg">{post.category.icon}</span>
-                {post.category.name}
-              </Badge>
+              {post.category && (
+                <Badge 
+                  variant="secondary" 
+                  style={{ backgroundColor: post.category.color + '20', color: post.category.color }}
+                  className="flex items-center gap-1"
+                >
+                  <span className="text-lg">{post.category.icon}</span>
+                  {post.category.name}
+                </Badge>
+              )}
               {post.featured && (
                 <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
                   <Star className="h-3 w-3 mr-1" />
@@ -276,9 +278,11 @@ export default function HowToPostPage() {
             </h1>
 
             {/* Excerpt */}
-            <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-              {post.excerpt}
-            </p>
+            {post.excerpt && (
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                {post.excerpt}
+              </p>
+            )}
 
             {/* Meta Information */}
             <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground mb-6">
@@ -286,18 +290,22 @@ export default function HowToPostPage() {
                 <User className="h-4 w-4" />
                 <span>{post.author}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{post.read_time}</span>
-              </div>
+              {post.read_time && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>{post.read_time}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4" />
                 <span>{post.view_count.toLocaleString()} views</span>
               </div>
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                <span>Published {formatDistanceToNow(new Date(post.published_at), { addSuffix: true })}</span>
-              </div>
+              {post.published_at && (
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span>Published {formatDistanceToNow(new Date(post.published_at), { addSuffix: true })}</span>
+                </div>
+              )}
             </div>
 
             {/* Tags */}
@@ -340,7 +348,7 @@ export default function HowToPostPage() {
               </div>
             ) : (
               <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-6xl opacity-50">{post.category.icon}</div>
+                <div className="text-6xl opacity-50">{post.category?.icon || "📝"}</div>
               </div>
             )}
           </div>
@@ -376,23 +384,27 @@ export default function HowToPostPage() {
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">By {post.author}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(post.published_at), { addSuffix: true })}
-                  </span>
-                </div>
+                {post.published_at && (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(post.published_at), { addSuffix: true })}
+                    </span>
+                  </div>
+                )}
               </div>
               
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Category:</span>
-                <Badge 
-                  variant="secondary" 
-                  style={{ backgroundColor: post.category.color + '20', color: post.category.color }}
-                >
-                  {post.category.name}
-                </Badge>
-              </div>
+              {post.category && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Category:</span>
+                  <Badge 
+                    variant="secondary" 
+                    style={{ backgroundColor: post.category.color + '20', color: post.category.color }}
+                  >
+                    {post.category.name}
+                  </Badge>
+                </div>
+              )}
             </div>
           </footer>
           </article>

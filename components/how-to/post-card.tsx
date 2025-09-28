@@ -53,7 +53,7 @@ export function PostCard({ post, variant = "default", showReadMore = true }: Pos
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
               <div className={`opacity-50 ${isFeatured ? "text-4xl" : isCompact ? "text-2xl" : "text-3xl"}`}>
-                {post.category.icon}
+                {post.category?.icon || "📝"}
               </div>
             </div>
           )}
@@ -61,16 +61,18 @@ export function PostCard({ post, variant = "default", showReadMore = true }: Pos
         
         <CardHeader className={`${isCompact ? "pb-2" : "pb-3"}`}>
           <div className="flex items-center gap-2 mb-2">
-            <Badge 
-              variant="secondary" 
-              style={{ backgroundColor: post.category.color + '20', color: post.category.color }}
-              className="flex items-center gap-1"
-            >
-              <span className={`${isCompact ? "text-xs" : "text-sm"}`}>
-                {post.category.icon}
-              </span>
-              {post.category.name}
-            </Badge>
+            {post.category && (
+              <Badge 
+                variant="secondary" 
+                style={{ backgroundColor: post.category.color + '20', color: post.category.color }}
+                className="flex items-center gap-1"
+              >
+                <span className={`${isCompact ? "text-xs" : "text-sm"}`}>
+                  {post.category.icon}
+                </span>
+                {post.category.name}
+              </Badge>
+            )}
             {post.featured && (
               <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
                 <Star className="h-3 w-3 mr-1" />
@@ -85,11 +87,13 @@ export function PostCard({ post, variant = "default", showReadMore = true }: Pos
             {post.title}
           </CardTitle>
           
-          <CardDescription className={`line-clamp-3 ${
-            isCompact ? "text-xs" : "text-sm"
-          }`}>
-            {post.excerpt}
-          </CardDescription>
+          {post.excerpt && (
+            <CardDescription className={`line-clamp-3 ${
+              isCompact ? "text-xs" : "text-sm"
+            }`}>
+              {post.excerpt}
+            </CardDescription>
+          )}
         </CardHeader>
         
         <CardContent className="pt-0">
@@ -97,10 +101,12 @@ export function PostCard({ post, variant = "default", showReadMore = true }: Pos
             isCompact ? "text-xs" : "text-sm"
           }`}>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1">
-                <Clock className={`${isCompact ? "h-3 w-3" : "h-4 w-4"}`} />
-                {post.read_time}
-              </div>
+              {post.read_time && (
+                <div className="flex items-center gap-1">
+                  <Clock className={`${isCompact ? "h-3 w-3" : "h-4 w-4"}`} />
+                  {post.read_time}
+                </div>
+              )}
               <div className="flex items-center gap-1">
                 <Eye className={`${isCompact ? "h-3 w-3" : "h-4 w-4"}`} />
                 {post.view_count.toLocaleString()}
@@ -109,11 +115,13 @@ export function PostCard({ post, variant = "default", showReadMore = true }: Pos
           </div>
           
           <div className="flex items-center justify-between">
-            <span className={`text-muted-foreground ${
-              isCompact ? "text-xs" : "text-xs"
-            }`}>
-              {formatDistanceToNow(new Date(post.published_at), { addSuffix: true })}
-            </span>
+            {post.published_at && (
+              <span className={`text-muted-foreground ${
+                isCompact ? "text-xs" : "text-xs"
+              }`}>
+                {formatDistanceToNow(new Date(post.published_at), { addSuffix: true })}
+              </span>
+            )}
             {showReadMore && (
               <Button 
                 variant="ghost" 

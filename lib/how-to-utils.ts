@@ -43,7 +43,9 @@ export function formatTags(tags: HowToPost['tags'], maxDisplay: number = 3) {
  */
 export function generateMetaDescription(post: HowToPost): string {
   const maxLength = 160
-  let description = post.excerpt
+  
+  // Use dedicated meta_description if available, otherwise fall back to excerpt
+  let description = post.meta_description || post.excerpt || ''
   
   if (description.length > maxLength) {
     description = description.substring(0, maxLength - 3) + '...'

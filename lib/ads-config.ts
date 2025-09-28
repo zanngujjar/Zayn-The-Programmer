@@ -17,10 +17,10 @@ export const ADS_CONFIG = {
     BLOG_LISTING_SIDEBAR_2: "2671878565", // TODO: Create this ad unit
     
     // Individual blog post ads
-    BLOG_POST_MOBILE_TOP: "1234567893", // TODO: Create this ad unit
-    BLOG_POST_MOBILE_INLINE: "1234567894", // TODO: Create this ad unit
-    BLOG_POST_SIDEBAR_1: "1234567895", // TODO: Create this ad unit
-    BLOG_POST_SIDEBAR_2: "1234567896", // TODO: Create this ad unit
+    BLOG_POST_MOBILE_TOP: "8194285092", // TODO: Create this ad unit
+    BLOG_POST_MOBILE_INLINE: "6347399696", // TODO: Create this ad unit
+    BLOG_POST_SIDEBAR_1: "1712637221", // TODO: Create this ad unit
+    BLOG_POST_SIDEBAR_2: "1973040416", // TODO: Create this ad unit
   }
 } as const
 

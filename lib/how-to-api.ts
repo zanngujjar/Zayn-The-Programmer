@@ -5,11 +5,11 @@ export interface HowToPost {
   id: string
   slug: string
   title: string
-  excerpt: string
-  content?: string
-  thumbnail_url: string
+  excerpt?: string
+  content: string
+  thumbnail_url?: string
   author: string
-  category: {
+  category?: {
     id: string
     name: string
     slug: string
@@ -23,9 +23,11 @@ export interface HowToPost {
     color: string
   }>
   featured: boolean
-  read_time: string
+  read_time?: string
   view_count: number
-  published_at: string
+  seo_title?: string
+  meta_description?: string
+  published_at?: string
   created_at: string
 }
 

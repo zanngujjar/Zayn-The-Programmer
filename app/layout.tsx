@@ -16,10 +16,35 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: "Zayn The Programmer - Professional Development Services",
+  title: {
+    default: "Zayn The Programmer - Professional Development Services",
+    template: "%s | Zayn The Programmer"
+  },
   description:
     "Expert freelance programmer offering web development, mobile apps, and custom software solutions. Quality code, competitive prices.",
-  generator: "v0.app",
+  generator: "Next.js",
+  metadataBase: new URL("https://zayntheprogrammer.com"),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://zayntheprogrammer.com",
+    siteName: "Zayn The Programmer",
+  },
+  twitter: {
+    card: "summary_large_image",
+    creator: "@zayntheprogrammer",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 }
 
 export default function RootLayout({
